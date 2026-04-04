@@ -41,39 +41,77 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIdx, setCurrentTrackIdx] = useState(0);
   const [showMusicMenu, setShowMusicMenu] = useState(false);
-  const audioRef = useRef(null);
 
   useEffect(() => {
     document.body.className = `theme-${currentTheme}`;
   }, [currentTheme]);
 
   useEffect(() => {
-    // Simulate other users joining and leaving the global anonymous queue
-    const interval = setInterval(() => {
-        setPeersOnline(Math.floor(Math.random() * 4)); // 0, 1, 2, or 3
-    }, 4000); // changes every 4 seconds for display purposes
-    return () => clearInterval(interval);
+    // Exact online data tracking with cache busting and logging
+    const t = new Date().getTime();
+    if (!user) {
+      // If not logged in, just poll for count
+      const fetchCount = async () => {
+        try {
+          const res = await fetch(`http://localhost:8000/api/online-count?t=${t}`);
+          const data = await res.json();
+          console.log("DEBUG: Anonymous Online Count Fetch:", data.online_count);
+          setPeersOnline(data.online_count || 0);
+        } catch (e) {
+          console.error("Failed to fetch online count", e);
+        }
+      };
+      
+      const interval = setInterval(fetchCount, 5000);
+      fetchCount();
+      return () => clearInterval(interval);
+    } else {
+      // If logged in, send heartbeat and fetch count
+      const sendHeartbeat = async () => {
+        try {
+          const res = await fetch(`http://localhost:8000/api/heartbeat?userName=${user}&t=${t}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user })
+          });
+          const data = await res.json();
+          console.log("DEBUG: Logged-in Heartbeat Result:", data.online_count);
+          setPeersOnline(data.online_count || 0);
+        } catch (e) {
+          console.error("Heartbeat failed", e);
+        }
+      };
+
+      const interval = setInterval(sendHeartbeat, 10000); // Heartbeat every 10s
+      sendHeartbeat();
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const audioRef = useRef(new Audio(AMBIENT_TRACKS[0].src));
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    audio.loop = true;
+    audio.volume = 0.2;
+    
+    // Cleanup on unmount
+    return () => {
+      audio.pause();
+    };
   }, []);
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    // Pleasant ambient background music
-    audioRef.current = new Audio(AMBIENT_TRACKS[currentTrackIdx].src);
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.2; // Soft subtle volume
-
-    if (isPlaying) {
-      audioRef.current.play().catch(e => console.log(e));
-    }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
+    const audio = audioRef.current;
+    const wasPlaying = isPlaying;
+    
+    if (audio.src !== AMBIENT_TRACKS[currentTrackIdx].src) {
+      audio.src = AMBIENT_TRACKS[currentTrackIdx].src;
+      if (wasPlaying) {
+        audio.play().catch(e => console.log("Audio play failed", e));
       }
-    };
-  }, [currentTrackIdx]);
+    }
+  }, [currentTrackIdx, isPlaying]);
 
   const toggleMusic = () => {
     if (isPlaying) {
@@ -94,38 +132,42 @@ function App() {
     setAnalyticsData(prev => [...prev, sessionData]);
   };
 
-  let Content = null;
-  if (!user) {
-    Content = <Login onLogin={(name) => setUser(name)} />;
-  } else if (mode === 'ai') {
-    Content = <AiChat onBack={() => setMode('dashboard')} onSaveAnalytics={handleSaveAnalytics} />;
-  } else if (mode === 'peer') {
-    Content = <PeerChat onBack={() => setMode('dashboard')} peersOnline={peersOnline} />;
-  } else if (mode === 'analytics') {
-    Content = <AnalyticsDashboard onBack={() => setMode('dashboard')} rawData={analyticsData} />;
-  } else if (mode === 'games') {
-    Content = <RelaxationGames onBack={() => setMode('dashboard')} />;
-  } else {
-    Content = <Dashboard
-      user={user}
-      themes={BACKGROUND_THEMES}
-      currentTheme={currentTheme}
-      onThemeChange={setCurrentTheme}
-      peersOnline={peersOnline}
-      onModeSelect={(selectedMode) => {
-        if (selectedMode === 'logout') {
-          setUser(null);
-          setMode('dashboard');
-        } else {
-          setMode(selectedMode);
-        }
-      }}
-    />;
-  }
+  const renderContent = () => {
+    if (!user) return <Login onLogin={setUser} />;
+    
+    switch (mode) {
+      case 'ai':
+        return <AiChat onBack={() => setMode('dashboard')} onSaveAnalytics={handleSaveAnalytics} />;
+      case 'peer':
+        return <PeerChat onBack={() => setMode('dashboard')} peersOnline={peersOnline} />;
+      case 'analytics':
+        return <AnalyticsDashboard onBack={() => setMode('dashboard')} rawData={analyticsData} />;
+      case 'games':
+        return <RelaxationGames onBack={() => setMode('dashboard')} />;
+      default:
+        return (
+          <Dashboard
+            user={user}
+            themes={BACKGROUND_THEMES}
+            currentTheme={currentTheme}
+            onThemeChange={setCurrentTheme}
+            peersOnline={peersOnline}
+            onModeSelect={(selectedMode) => {
+              if (selectedMode === 'logout') {
+                setUser(null);
+                setMode('dashboard');
+              } else {
+                setMode(selectedMode);
+              }
+            }}
+          />
+        );
+    }
+  };
 
   return (
     <>
-      {Content}
+      {renderContent()}
       {user && (
         <div className="music-player-container">
           <div className="music-player">

@@ -7,61 +7,34 @@
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
 :root {
-  /* Handcrafted Studio Neutral Theme - Sophisticated & Human */
   --bg-top: #1a1b1e;
   --bg-bottom: #101113;
   --bg-accent-1: rgba(255, 255, 255, 0.03);
-  /* Muted Neutral */
   --bg-accent-2: rgba(255, 255, 255, 0.02);
-  /* Soft Neutral */
 
   --accent-main: #d1d5db;
-  /* Soft Gray */
   --accent-secondary: #9ca3af;
-  /* Medium Gray */
   --accent-blue: #64748b;
-  --accent-green: #4b5563;
-  --accent-yellow: #374151;
-  --accent-red: #1f2937;
+  --accent-green: #10b981;
+  --accent-yellow: #f59e0b;
+  --accent-red: #ef4444;
 
   --text-main: #f3f4f6;
   --text-muted: #9ca3af;
   --border-light: rgba(255, 255, 255, 0.06);
   --glass-bg: rgba(26, 27, 30, 0.6);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-  --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --font-heading: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Inter', sans-serif;
-
-  /* Human-friendly Neutral Gradients */
-  --bg-gradient-default: linear-gradient(135deg, #1a1b1e 0%, #101113 100%);
-  --bg-gradient-forest: linear-gradient(135deg, #1e201e 0%, #101110 100%);
-  --bg-gradient-sunset: linear-gradient(135deg, #221f1f 0%, #141111 100%);
-  --bg-gradient-space: linear-gradient(135deg, #18191b 0%, #0d0e10 100%);
-  --bg-gradient-calm: linear-gradient(135deg, #1c1d1f 0%, #0f1012 100%);
 }
 
-body.theme-default {
-  background: var(--bg-gradient-default);
-}
-
-body.theme-forest {
-  background: var(--bg-gradient-forest);
-}
-
-body.theme-sunset {
-  background: var(--bg-gradient-sunset);
-}
-
-body.theme-space {
-  background: var(--bg-gradient-space);
-}
-
-body.theme-calm {
-  background: var(--bg-gradient-calm);
-}
+body.theme-default { --bg-top: #1a1b1e; --bg-bottom: #101113; --bg-accent-1: rgba(255,255,255,0.03); --bg-accent-2: rgba(255,255,255,0.02); }
+body.theme-forest { --bg-top: #141b17; --bg-bottom: #0a0d0b; --bg-accent-1: rgba(16, 185, 129, 0.08); --bg-accent-2: rgba(16, 185, 129, 0.03); }
+body.theme-sunset { --bg-top: #1f1a17; --bg-bottom: #12100e; --bg-accent-1: rgba(245, 158, 11, 0.08); --bg-accent-2: rgba(245, 158, 11, 0.03); }
+body.theme-space { --bg-top: #1a1a24; --bg-bottom: #0d0d12; --bg-accent-1: rgba(99, 102, 241, 0.08); --bg-accent-2: rgba(99, 102, 241, 0.03); }
+body.theme-calm { --bg-top: #171c1f; --bg-bottom: #0e1112; --bg-accent-1: rgba(100, 116, 139, 0.08); --bg-accent-2: rgba(100, 116, 139, 0.03); }
 
 /* Ambient Visual Interactivity (Dynamic CSS Themes) */
 
@@ -403,24 +376,29 @@ button {
 }
 
 .theme-chip {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.2rem;
   border-radius: 20px;
   font-size: 0.85rem;
-  background: transparent;
-  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--text-muted);
-  transition: var(--transition);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
 }
 
 .theme-chip:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-main);
+  transform: translateY(-1px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .theme-chip.active {
-  background: var(--accent-main);
-  color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  background: var(--text-main);
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+  border-color: var(--text-main);
 }
 
 .user-greeting {
